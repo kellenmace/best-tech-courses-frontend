@@ -2,11 +2,36 @@ import React from 'react';
 import Routes from './routes';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+import { getToken, isTokenExpired } from './controllers/auth';
 // import logo from './logo.svg';
 // import './App.css';
 
+
+
+// TODO:
+// Steps to follow: https://github.com/wp-graphql/wp-graphql-jwt-authentication/issues/6
+// See auth & withData files in reactpress-graphql
+
 const client = new ApolloClient({
-  uri: "https://besttechcourses.test/graphql"
+  uri: "https://besttechcourses.test/graphql/?XDEBUG_SESSION_START=10705",
+  request: async operation => {
+    const token = getToken('authToken');
+    console.log('authToken fetched from localStorage:');
+    console.log(token);
+    if (token) {
+      console.log('Token is valid (not expired).')
+    } else {
+      console.log('Token is either nonexistent or expired.');
+    }
+
+    if (!token) return;
+
+    operation.setContext({
+      headers: {
+        authorization: `Bearer ${token}`
+      }
+    });
+  }
 });
 
 export default () => (
