@@ -1,7 +1,6 @@
 import React from 'react';
-// import Head from './Head';
-// import Header from './Header';
-// import Footer from './Footer';
+import Header from './Header';
+import Footer from './Footer';
 
 const layoutStyle = {
     margin: 20,
@@ -10,11 +9,8 @@ const layoutStyle = {
 
 export default props => (
     <div style={layoutStyle}>
-        {/* <Head />
-        <Header /> */}
-        <p>Header goes here.</p>
+        <Header />
         {props.children}
-        <p>Footer goes here.</p>
-        {/* <Footer /> */}
+        <Footer />
     </div>
 );

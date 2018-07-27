@@ -1,8 +1,5 @@
 import React from 'react';
-// import { Query } from 'react-apollo';
-// import gql from 'graphql-tag';
 import Layout from '../components/Layout';
-import SignInForm from '../components/SignInForm';
 import ConsoleLogActiveUser from '../components/ConsoleLogActiveUser';
 
 export default () => {
@@ -12,7 +9,7 @@ export default () => {
   return (
     <Layout>
       <h1>Best Tech Courses</h1>
-      <SignInForm />
+      <p>Here is homepage content.</p>
       <ConsoleLogActiveUser />
     </Layout>
   );

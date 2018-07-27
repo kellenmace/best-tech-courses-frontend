@@ -10,7 +10,7 @@ export const storeUserData = userData => {
 // Returns null if it is nonexistent or expired.
 export const getToken = type => {
   const userData = JSON.parse( localStorage.getItem(USERDATA_KEY) );
-  if (!userData || !userData[type] || isTokenExpired(userData[type])) return null;
+  if (!userData || !userData[type]) return null;
   return userData[type];
 };
 
@@ -24,3 +24,16 @@ const getTokenExpirationDate = token => {
   if (!decoded.exp) return null;
   return new Date(decoded.exp * 1000);
 }
+
+export const setAuthToken = newToken => {
+  const userData = JSON.parse( localStorage.getItem(USERDATA_KEY) );
+  if (!userData || !userData.authToken) return;
+  userData.authToken = newToken;
+  storeUserData(userData);
+};
+
+// Get a universally unique identifier.
+export const getUuid = () => (
+  [1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+);
