@@ -2,13 +2,9 @@ import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import { storeUserData } from '../controllers/auth';
+import { storeUserData, getUuid } from '../controllers/auth';
 
 class SignInForm extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   state = {
     email: '',
     password: '',
@@ -38,7 +34,7 @@ class SignInForm extends Component {
         variables: {
           username: this.state.email,
           password: this.state.password,
-          clientMutationId: this.getUuid()
+          clientMutationId: getUuid()
         }
       });
 
@@ -57,11 +53,6 @@ class SignInForm extends Component {
       this.setState({ serverError: 'Invaid email or password. Please try again.' });
     }
   }
-
-  getUuid = () => (
-    [1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
 
   validate = () => {
     const inputs = [...this.formEl.getElementsByTagName('input')];

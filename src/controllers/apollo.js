@@ -7,10 +7,11 @@ import { getToken, isTokenExpired, setAuthToken, getUuid } from './auth';
 import { catchErrors } from '../handlers/errorHandlers';
 
 const authLink = setContext( async (_, { headers }) => {
-  const token = getAuthLinkToken();
-  console.log( 'authLink is' );
-  console.log( token );
-  console.log('-----')
+  let token = getToken('authToken');
+
+  if ( token && isTokenExpired(token)) {
+    [ token ] = await catchErrors( refreshAuthToken() );
+  }
 
   // Return the headers to the context so httpLink can read them.
   return {
@@ -20,27 +21,6 @@ const authLink = setContext( async (_, { headers }) => {
     }
   }
 });
-
-const getAuthLinkToken = async () => {
-  const token = getToken('authToken');
-
-  if (!token) {
-    return '';
-  }
-
-  if (!isTokenExpired(token)) {
-    console.log( 'token is not expired.');
-    console.log( token );
-    console.log('-----');
-    return token;
-  }
-
-  const [ newToken, error ] = await catchErrors( refreshAuthToken() );
-
-  // TODO: If there's an error, we were unable to refresh auth token.
-  // Maybe redirect to login page?
-  return !error ? newToken : '';
-};
 
 const refreshAuthToken = () => {
   const options = {
@@ -85,6 +65,12 @@ export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+// TODO:
+// Redirect user to Sign In page if token refresh was unsucessful.
+// import { Redirect } from 'react-router-dom';
+// if (error) {
+//   return <Redirect to='/sign-in' push />;
+// }
 
 
 

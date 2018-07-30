@@ -12,3 +12,7 @@ export default () => (
     </div>
   </header>
 );
+
+// TODO:
+// Add logged-in user avatar and log out button
+// import ConsoleLogActiveUser from '../components/ConsoleLogActiveUser';
