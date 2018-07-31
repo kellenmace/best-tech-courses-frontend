@@ -2,11 +2,15 @@ import React from 'react';
 import Layout from '../components/Layout';
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
-// import CoursesList from '../components/CoursesList';
+import CoursesList from '../components/CoursesList';
 
-const CourseCategory = ({courseCategory}) => {
-  if ( ! courseCategory ) return <NotFound />;
-  const { name, slug, imageUrl, coursesList: { courses } } = courseCategory;
+const CourseCategory = props => {
+  if (! props.courseCategories || ! props.courseCategories.edges.length) {
+    return <NotFound />;
+  }
+  const courseCategory = props.courseCategories.edges[0].courseCategory;
+  const { name, imageUrl, coursesList } = courseCategory;
+  const courses = coursesList.courses.map( index => index.course );
 
   return (
     <Layout>
@@ -24,21 +28,33 @@ const NotFound = () => (
 );
 
 const GET_COURSE_CATEGORY = gql`
-  query getCourseCategory($id: ID!) {
-    courseCategory(id: $id) {
-      id
-      slug
-      name
-      imageUrl
-      coursesList: courses {
-        courses: nodes {
+  query getCourseCategory($slug: [String]) {
+    courseCategories( where: {
+      slug: $slug
+    } ) {
+      edges {
+        courseCategory: node {
           id
-          title
-          instructor
-          discount
+          courseCategoryId
+          termTaxonomyId
+          name
           slug
-          featuredImage {
-            sourceUrl
+          imageUrl
+          coursesList: courses {
+            courses: edges {
+              course: node {
+                id
+                slug
+                title
+                content
+                instructor
+                discount
+                affiliateLink
+                featuredImage {
+                  sourceUrl
+                }
+              }
+            }
           }
         }
       }
@@ -46,7 +62,7 @@ const GET_COURSE_CATEGORY = gql`
   }
 `;
 
-export default withRouter( graphql(GET_COURSE_CATEGORY, {
-  options: props => ({ variables: { id: props.router.query.id } }),
-  props: ({ data: { courseCategory } }) => ({ courseCategory })
-})(CourseCategory) );
+export default graphql(GET_COURSE_CATEGORY, {
+  options: props => ({ variables: { slug: props.match.params.slug } }),
+  props: ({ data: courseCategories }) => (courseCategories)
+})(CourseCategory);

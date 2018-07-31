@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import DefaultLogo from '../images/logo-default';
 
 const CourseCategoryCard = ({courseCategory}) => {
-  const { id, slug, name, imageUrl } = courseCategory;
+  const { slug, name, imageUrl } = courseCategory;
   const image = imageUrl ? <img src={ imageUrl } alt={ name } /> : <DefaultLogo />;
 
   return (
