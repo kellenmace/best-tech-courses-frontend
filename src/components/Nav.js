@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { isUserSignedIn } from '../controllers/auth';
+import { isUserSignedIn, getGravatar } from '../controllers/auth';
 
 const links = [
   { to: '/courses', label: 'Courses' },
   { to: '/about', label: 'About' },
 ];
 
-// https://unsplash.com/
-if ( !isUserSignedIn() ) {
+if ( isUserSignedIn() ) {
+  links.push({ to: '/account', label: <img src={ getGravatar() } alt="User Avatar" /> });
+  // TODO: add Account and Sign out submenu items.
+} else {
+  // https://unsplash.com/
   links.push({ to: '/sign-in', label: 'Sign In' });
   links.push({ to: '/sign-up', label: 'Join free' });
 }
