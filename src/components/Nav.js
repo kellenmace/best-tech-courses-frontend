@@ -1,21 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { isUserSignedIn } from '../controllers/auth';
 
 const links = [
   { to: '/courses', label: 'Courses' },
-  { to: '/sign-in', label: 'Sign In' },
-  { to: '/sign-up', label: 'Sign Up' }
-].map(link => {
-  link.key = `nav-link-${link.href}-${link.label}`
-  return link
-});
+  { to: '/about', label: 'About' },
+];
+
+// https://unsplash.com/
+if ( !isUserSignedIn() ) {
+  links.push({ to: '/sign-in', label: 'Sign In' });
+  links.push({ to: '/sign-up', label: 'Join free' });
+}
 
 export default () => (
   <nav>
     <ul>
       {links.map(
-        ({ key, to, label }) => (
-          <li key={key}>
+        ({ to, label }) => (
+          <li key={`nav-link-${to}-${label}`}>
             <Link to={to}>{label}</Link>
           </li>
         )
@@ -49,4 +52,4 @@ export default () => (
       }
     `}</style> */}
   </nav>
-)
+);

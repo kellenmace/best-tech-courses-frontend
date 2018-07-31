@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Nav from './Nav';
+import { isUserSignedIn, getGravatar } from '../controllers/auth';
 
 export default () => (
   <header className="header" style={{border: '3px solid #eee'}}>
@@ -10,6 +11,12 @@ export default () => (
     <div className="nav">
       <Nav />
     </div>
+      { isUserSignedIn() &&
+        <div className="account-menu">
+          <img src={ getGravatar() } alt="User Avatar" />
+        </div>
+      }
+      
   </header>
 );
 

@@ -1,4 +1,5 @@
 import decode from 'jwt-decode';
+import md5 from 'md5';
 
 const USERDATA_KEY = 'userData';
 
@@ -37,3 +38,15 @@ export const getUuid = () => (
   [1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16) // eslint-disable-line no-mixed-operators
 );
+
+export const isUserSignedIn = () => {
+  const token = getToken('authToken');
+  return !!token && !isTokenExpired(token);
+};
+
+export const getGravatar = () => {
+  const userData = JSON.parse( localStorage.getItem(USERDATA_KEY) );
+  if ( ! userData || ! userData.user || ! userData.user.email ) return '';
+  const hash = md5(userData.user.email);
+  return `https://gravatar.com/avatar/${hash}?s=200&d=robohash`;
+};

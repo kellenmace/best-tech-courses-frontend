@@ -140,6 +140,7 @@ const SIGN_IN = gql`
       refreshToken
       user {
         firstName
+        email
       }
     }
   }
