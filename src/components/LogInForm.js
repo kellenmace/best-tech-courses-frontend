@@ -4,14 +4,13 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { storeUserData, getUuid } from '../controllers/auth';
 
-class SignInForm extends Component {
+class LogInForm extends Component {
   state = {
     email: '',
     password: '',
     errors: {},
     serverError: ''
     // isLoading: false,
-    // fieldsBlurred: {},
   }
 
   handleInputChange = event => {
@@ -28,9 +27,9 @@ class SignInForm extends Component {
     }
 
     try {
-      console.log( 'Signing in now.');
+      console.log( 'Logging in now.');
 
-      const response = await this.props.signInMutation({
+      const response = await this.props.logInMutation({
         variables: {
           username: this.state.email,
           password: this.state.password,
@@ -43,7 +42,7 @@ class SignInForm extends Component {
       console.log('User authenticated successfully and token stored in localStorage.');
 
       // TODO: maybe redirect the user back to the prevous page they were on
-      // and display a "You are signed in" message.
+      // and display a "You are logged in" message.
       // this.props.router.push("/account");
       // To get user data:
       // JSON.parse( localStorage.getItem('userData') );
@@ -71,23 +70,23 @@ class SignInForm extends Component {
     const { errors } = this.state;
     if ( ! errors[ name ] ) return '';
 
-    return <span className="SignInForm__error">{errors[ name ]}</span>;
+    return <span className="LogInForm__error">{errors[ name ]}</span>;
   }
 
   renderServerError = () => {
     const { serverError } = this.state;
     if ( ! serverError ) return '';
 
-    return <span className="SignInForm__error">{serverError}</span>;
+    return <span className="LogInForm__error">{serverError}</span>;
   }
 
   render() {
     return (
       <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
 
-          <label htmlFor="SignUpForm-email">Email</label>
+          <label htmlFor="LogUpForm-email">Email</label>
           <input
-            id="SignUpForm-email"
+            id="LogUpForm-email"
             type="email"
             name="email"
             value={ this.state.email }
@@ -96,9 +95,9 @@ class SignInForm extends Component {
           />
           {this.renderFieldError('email')}
   
-          <label htmlFor="SignInForm-password">Password</label>
+          <label htmlFor="LogInForm-password">Password</label>
           <input
-            id="SignInForm-password"
+            id="LogInForm-password"
             type="password"
             name="password"
             value={ this.state.password }
@@ -110,7 +109,7 @@ class SignInForm extends Component {
           <p>Server Errors:</p>
           {this.renderServerError()}
   
-          <button>Sign in</button>
+          <button>Log in</button>
   
         </form>
     );
@@ -129,7 +128,7 @@ class SignInForm extends Component {
 //   border: 2px solid green;
 // }
 
-const SIGN_IN = gql`
+const LOG_IN = gql`
   mutation LoginUser($username: String!, $password: String!, $clientMutationId: String!) {
     login( input: {
       username: $username,
@@ -146,4 +145,4 @@ const SIGN_IN = gql`
   }
 `;
 
-export default graphql(SIGN_IN, { name: 'signInMutation' })(SignInForm);
+export default graphql(LOG_IN, { name: 'logInMutation' })(LogInForm);

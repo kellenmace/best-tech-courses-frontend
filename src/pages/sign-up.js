@@ -7,6 +7,6 @@ export default () => (
   <Layout>
     <h1>Sign up</h1>
     <SignUpForm />
-    <span>or <Link to="/sign-in">sign in</Link></span>    
+    <span>or <Link to="/log-in">log in</Link></span>    
   </Layout>
 );
