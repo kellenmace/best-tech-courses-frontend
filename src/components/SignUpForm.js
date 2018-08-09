@@ -1,33 +1,56 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+import { getUuid } from '../controllers/auth';
 
 class SignUpForm extends Component {
   state = {
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
-    passwordConfirm: '',
-    errors: {}
-    // isValidated: false,
-    // isLoading: false,
+    payPalEmail: '',
+    errors: {},
+    serverError: '',
+    registered: false
+    // TODO – loading: false,
   }
 
   handleInputChange = event => {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleFormSubmit = event => {
+  handleFormSubmit = async event => {
+    const { firstName, lastName, email, payPalEmail } = this.state;
+    const { registerUserMutation } = this.props;
+
     event.preventDefault();
+    this.setState({ serverError: '' });
+
     const isValid = this.validate();
 
     if ( ! isValid ) {
-      console.log('errors were found - not submitting form.');
       return;
     }
 
-    console.log( 'no errors found. Submitting form now.');
+    try {
+      const response = await registerUserMutation({
+        variables: {
+          clientMutationId: getUuid(),
+          firstName,
+          lastName,
+          email,
+          payPalEmail
+        }
+      });
+
+      if (response.data.registerUser) {
+        this.setState({ registered: true });
+      }
+    }
+    catch(error) {
+      this.setState({ serverError: 'Invaid email or password. Please try again.' });
+    }
   }
 
   validate = () => {
@@ -38,19 +61,9 @@ class SignUpForm extends Component {
     // Add HTML5 form validation messages to errors object.
     invalidInputs.map( input => errors[input.name] = input.validationMessage );
 
-    // Make sure password and password confirmation match.
-    if ( ! errors.hasOwnProperty('passwordConfirm') && ! this.doPasswordsMatch(inputs) ) {
-      errors.passwordConfirm = 'Passwords must match';
-    }
-
     this.setState({ errors });
 
     return isEmpty(errors);
-  }
-
-  doPasswordsMatch = inputs => {
-    const passwordFields = inputs.filter( input => input.type === 'password' );
-    return passwordFields.length === 2 && passwordFields[0].value === passwordFields[1].value;
   }
 
   renderFieldError = name => {
@@ -60,19 +73,27 @@ class SignUpForm extends Component {
     return <span className="SignUpForm__error">{errors[ name ]}</span>;
   }
 
+  renderServerError = () => {
+    const { serverError } = this.state;
+    if ( ! serverError ) return '';
+
+    return <span className="LogInForm__error">{serverError}</span>;
+  }
+
   render() {
-    // const className = this.state.isValidated ? 'was-validated' : '';
-    // const props = [...this.props];
+    const { registered, email } = this.state;
 
-    // let classNames = [];
-    // if (props.className) {
-    //     classNames = [...props.className];
-    //     delete props.className;
-    // }
-
-    // if (this.state.isValidated) {
-    //     classNames.push('.was-validated');
-    // }
+    if ( registered ) {
+      return (
+        <div>
+          <h3>All right, Sparky!</h3>
+          <p>A confirmation link has been emailed to you. Please visit it to confirm your account.</p>
+          { email.endsWith('@gmail.com') &&
+            <a href="https://mail.google.com/">Go to my inbox →</a>
+          }
+        </div>
+      );
+    }
 
     return (
       <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
@@ -109,27 +130,19 @@ class SignUpForm extends Component {
         />
         {this.renderFieldError('email')}
 
-        <label htmlFor="SignUpForm-password">Password</label>
+        <label htmlFor="SignUpForm-payPalEmail">PayPal Email</label>
         <input
-          id="SignUpForm-password"
-          type="password"
-          name="password"
-          value={ this.state.password }
+          id="SignUpForm-payPalEmail"
+          type="email"
+          name="payPalEmail"
+          value={ this.state.payPalEmail }
           onChange={this.handleInputChange}
           required
         />
-        {this.renderFieldError('password')}
+        <span>This is required so we can send you 💰 for the reviews you leave.</span>
+        {this.renderFieldError('payPalEmail')}
 
-        <label htmlFor="SignUpForm-password-confirm">Confirm Password</label>
-        <input
-          id="SignUpForm-password-confirm"
-          type="password"
-          name="passwordConfirm"
-          value={ this.state.passwordConfirm }
-          onChange={this.handleInputChange}
-          required
-        />
-        {this.renderFieldError('passwordConfirm')}
+        {this.renderServerError()}
 
         <button>Sign up</button>
 
@@ -157,4 +170,106 @@ class SignUpForm extends Component {
 //     submit: PropTypes.func.isRequired
 // };
 
-export default SignUpForm;
+const REGISTER_USER = gql`
+  mutation registerUser(
+    $clientMutationId: String!,
+    $firstName: String!,
+    $lastName: String!,
+    $email: String!,
+    $payPalEmail: String!,
+  ) {
+    registerUser(input: {
+      clientMutationId: $clientMutationId
+      username: $email
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      payPalEmail: $payPalEmail
+    }) {
+      user {
+        username
+        email
+      }
+    }
+  }
+`;
+
+export default graphql(REGISTER_USER, { name: 'registerUserMutation' })(SignUpForm);
+
+
+
+/*
+
+// LOST PASSWORD
+// wp-login.php:541
+
+if ( empty( $_POST['user_login'] ) || ! is_string( $_POST['user_login'] ) ) {
+  // Enter a username or email address.
+	} elseif ( strpos( $_POST['user_login'], '@' ) ) {
+		$user_data = get_user_by( 'email', trim( wp_unslash( $_POST['user_login'] ) ) );
+		if ( empty( $user_data ) ) {
+      //There is no user registered with that email address.
+    }
+	} else {
+		$login = trim($_POST['user_login']);
+		$user_data = get_user_by('login', $login);
+  }
+}
+
+Call retrieve_password().
+// wp-login.php:310
+// uses $_POST['user_login'] to look up user by their email.
+// returns true on success or WP_Error with the error details on failure.
+
+
+
+
+
+// PASSWORD RESET
+
+http://besttechcourses.test/wp-login.php
+?action=rp
+&key=T9F7jagmlakF60aA6ErD
+&login=newman3
+
+$user = check_password_reset_key( $rp_key, $rp_login );
+
+if ( ! $user || is_wp_error( $user ) ) {
+  if ( $user && $user->get_error_code() === 'expired_key' ) {
+    // key is expired.
+  } else {
+    // key is invalid.
+  }
+}
+
+if ( isset($_POST['pass1']) && $_POST['pass1'] !== $_POST['pass2'] ) {
+  // The passwords do not match.
+}
+
+$errors = new WP_Error();
+
+/**
+ * Fires before the password reset procedure is validated.
+ *
+ * @since 3.5.0
+ *
+ * @param object           $errors WP Error object.
+ * @param WP_User|WP_Error $user   WP_User object if the login and reset key match. WP_Error object otherwise.
+ */
+/*
+do_action( 'validate_password_reset', $errors, $user );
+
+if ( ( ! $errors->get_error_code() ) && ! empty( $_POST['pass1'] ) ) {
+  reset_password($user, $_POST['pass1']);
+  // Your password has been reset.
+}
+
+
+
+*/
+
+
+
+
+
+

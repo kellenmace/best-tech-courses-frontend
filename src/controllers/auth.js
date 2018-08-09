@@ -39,9 +39,13 @@ export const getUuid = () => (
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16) // eslint-disable-line no-mixed-operators
 );
 
-export const isUserSignedIn = () => {
+export const isUserLoggedIn = () => {
   const token = getToken('authToken');
   return !!token && !isTokenExpired(token);
+};
+
+export const logUserOut = () => {
+  localStorage.removeItem(USERDATA_KEY);
 };
 
 export const getGravatar = () => {

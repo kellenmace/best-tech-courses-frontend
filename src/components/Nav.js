@@ -1,19 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { isUserSignedIn, getGravatar } from '../controllers/auth';
+import { isUserLoggedIn, getGravatar } from '../controllers/auth';
 
 const links = [
   { to: '/courses', label: 'Courses' },
   { to: '/about', label: 'About' },
 ];
 
-if ( isUserSignedIn() ) {
+if ( isUserLoggedIn() ) {
   links.push({ to: '/account', label: <img src={ getGravatar() } alt="User Avatar" /> });
   // TODO: add Account and Sign out submenu items.
 } else {
   // https://unsplash.com/
-  links.push({ to: '/sign-in', label: 'Sign In' });
-  links.push({ to: '/sign-up', label: 'Join free' });
+  links.push({ to: '/log-in', label: 'Log In' });
+  links.push({ to: '/sign-up', label: 'Sign up' });
 }
 
 export default () => (

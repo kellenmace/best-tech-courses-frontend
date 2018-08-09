@@ -10,7 +10,7 @@ class LogInForm extends Component {
     password: '',
     errors: {},
     serverError: ''
-    // isLoading: false,
+    // TODO– loading: false,
   }
 
   handleInputChange = event => {
@@ -41,12 +41,12 @@ class LogInForm extends Component {
 
       console.log('User authenticated successfully and token stored in localStorage.');
 
-      // TODO: maybe redirect the user back to the prevous page they were on
-      // and display a "You are logged in" message.
-      // this.props.router.push("/account");
+      // TODO: display a "You are logged in" message.
+      // Using apollo-link-state, store a 'loggedIn' key that gets set to true/false
+      // When the user logs in/out. Set the nav menu up to reference that so that
+      // it rerenders whenever it changes.
       // To get user data:
       // JSON.parse( localStorage.getItem('userData') );
-      // userData.authToken and userData.authToken.firstName
 
     } catch(error) {
       this.setState({ serverError: 'Invaid email or password. Please try again.' });
