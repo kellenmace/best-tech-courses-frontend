@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { getUuid } from '../controllers/auth';
+import GoToInboxButton from '../components/GoToInboxButton';
 
 class SignUpForm extends Component {
   state = {
@@ -25,7 +26,7 @@ class SignUpForm extends Component {
     const { registerUserMutation } = this.props;
 
     event.preventDefault();
-    this.setState({ serverError: '' });
+    this.setState({ errors: {}, serverError: '' });
 
     const isValid = this.validate();
 
@@ -88,9 +89,7 @@ class SignUpForm extends Component {
         <div>
           <h3>All right, Sparky!</h3>
           <p>A confirmation link has been emailed to you. Please visit it to confirm your account.</p>
-          { email.endsWith('@gmail.com') &&
-            <a href="https://mail.google.com/">Go to my inbox →</a>
-          }
+          <GoToInboxButton email={ email } />
         </div>
       );
     }

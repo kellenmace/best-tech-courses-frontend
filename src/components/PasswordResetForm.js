@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-
+import { getUuid } from '../controllers/auth';
 
 class PasswordResetForm extends Component {
   state = {
-    email: '',
-    errors: {}
+    password: '',
+    errors: {},
+    passwordReset: false
     // isValidated: false,
-    // isLoading: false,
+    // loading: false,
   }
 
   handleInputChange = event => {
@@ -43,32 +44,21 @@ class PasswordResetForm extends Component {
     const { errors } = this.state;
     if ( ! errors[ name ] ) return '';
 
-    return <span className="PasswordResetForm__error">{errors[ name ]}</span>;
+    return <span className="PasswordResetLinkForm__error">{errors[ name ]}</span>;
   }
 
   render() {
-    // const className = this.state.isValidated ? 'was-validated' : '';
-    // const props = [...this.props];
-
-    // let classNames = [];
-    // if (props.className) {
-    //     classNames = [...props.className];
-    //     delete props.className;
-    // }
-
-    // if (this.state.isValidated) {
-    //     classNames.push('.was-validated');
-    // }
-
     return (
       <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
 
-        <label htmlFor="PasswordResetForm-email">Email</label>
+        <p>Enter your new password.</p>
+
+        <label htmlFor="PasswordResetLinkForm-email">Email</label>
         <input
-          id="PasswordResetForm-email"
+          id="PasswordResetLinkForm-email"
           type="email"
           name="email"
-          value={ this.state.email }
+          value={this.state.email}
           onChange={this.handleInputChange}
           required
         />
@@ -80,5 +70,23 @@ class PasswordResetForm extends Component {
     );
   }
 }
+
+
+// const LOST_PASSWORD = gql`
+// mutation userLostPassword(
+//   $clientMutationId: String!,
+//   $username: String!,
+// ) {
+//   userLostPassword(input: {
+//     clientMutationId: $clientMutationId
+//     username: $username
+//   }) {
+//     user {
+//       username
+//       email
+//     }
+//   }
+// }
+// `;
 
 export default PasswordResetForm;
