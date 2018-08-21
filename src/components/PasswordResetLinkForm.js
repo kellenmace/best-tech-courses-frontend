@@ -1,9 +1,10 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { getUuid } from '../controllers/auth';
 import GoToInboxButton from '../components/GoToInboxButton';
+import Emoji from '../components/Emoji';
 
 class PasswordResetLinkForm extends Component {
   state = {
@@ -21,7 +22,7 @@ class PasswordResetLinkForm extends Component {
 
   handleFormSubmit = async event => {
     const { email } = this.state;
-    const { userLostPasswordMutation } = this.props;
+    const { sendPasswordResetEmail } = this.props;
 
     event.preventDefault();
     this.setState({ errors: {}, serverError: '' });
@@ -33,19 +34,19 @@ class PasswordResetLinkForm extends Component {
     }
 
     try {
-      const response = await userLostPasswordMutation({
+      const response = await sendPasswordResetEmail({
         variables: {
           clientMutationId: getUuid(),
           username: email,
         }
       });
 
-      if (response.data.userLostPassword) {
+      if (response.data.sendPasswordResetEmail) {
         this.setState({ emailSent: true });
       }
     }
     catch(error) {
-      this.setState({ serverError: 'Invaid email. Please try again.' });
+      this.setState({ serverError: 'There is no user registered with that email address. Please try again.' });
     }
   }
 
@@ -81,10 +82,12 @@ class PasswordResetLinkForm extends Component {
 
     if (emailSent) {
       return (
-        <Fragment>
-          <p>🔗 A password reset link has been emailed to you. 🔗</p>
+        <div>
+          <p>
+            <Emoji symbol="🔗" label="link" /> A password reset link has been emailed to you. <Emoji symbol="🔗" label="link" />
+          </p>
           <GoToInboxButton email={ email } />
-        </Fragment>
+        </div>
       );
     }
 
@@ -113,12 +116,12 @@ class PasswordResetLinkForm extends Component {
   }
 }
 
-const LOST_PASSWORD = gql`
-  mutation userLostPassword(
+const SENT_PASSWORD_RESET_EMAIL = gql`
+  mutation sendPasswordResetEmail(
     $clientMutationId: String!,
     $username: String!,
   ) {
-    userLostPassword(input: {
+    sendPasswordResetEmail(input: {
       clientMutationId: $clientMutationId
       username: $username
     }) {
@@ -130,4 +133,4 @@ const LOST_PASSWORD = gql`
   }
 `;
 
-export default graphql(LOST_PASSWORD, { name: 'userLostPasswordMutation' })(PasswordResetLinkForm);
+export default graphql(SENT_PASSWORD_RESET_EMAIL, { name: 'sendPasswordResetEmail' })(PasswordResetLinkForm);

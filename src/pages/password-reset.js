@@ -6,15 +6,15 @@ import PasswordResetForm from '../components/PasswordResetForm';
 
 export default props => {
   const params = queryString.parse(props.location.search);
-  const { key, login } = params;
+  const { key: resetKey, login } = params;
 
   return (
     <Layout>
       <h1>Reset password</h1>
-      { !key || !login ?
+      { !resetKey || !login ?
           <PasswordResetLinkForm />
         : 
-          <PasswordResetForm key={params.key} login={params.login}/>
+          <PasswordResetForm resetKey={resetKey} login={login}/>
       }
     </Layout>
   );

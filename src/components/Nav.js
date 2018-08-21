@@ -9,9 +9,8 @@ const links = [
 
 if ( isUserLoggedIn() ) {
   links.push({ to: '/account', label: <img src={ getGravatar() } alt="User Avatar" /> });
-  // TODO: add Account and Sign out submenu items.
+  // TODO: add Account and log out submenu items.
 } else {
-  // https://unsplash.com/
   links.push({ to: '/log-in', label: 'Log In' });
   links.push({ to: '/sign-up', label: 'Sign up' });
 }
