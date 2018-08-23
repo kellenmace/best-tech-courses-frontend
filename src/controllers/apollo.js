@@ -4,13 +4,13 @@ import { createHttpLink } from 'apollo-link-http';
 import { concat } from 'apollo-link';
 import { setContext } from 'apollo-link-context';
 import { getToken, isTokenExpired, setAuthToken, getUuid } from './auth';
-import { catchErrors } from '../handlers/errorHandlers';
+//import { catchErrors } from '../handlers/errorHandlers';
 
 const authLink = setContext( async (_, { headers }) => {
   let token = getToken('authToken');
 
   if ( token && isTokenExpired(token)) {
-    [ token ] = await catchErrors( refreshAuthToken() );
+    token = await refreshAuthToken();
   }
 
   // Return the headers to the context so httpLink can read them.
@@ -22,7 +22,15 @@ const authLink = setContext( async (_, { headers }) => {
   }
 });
 
-const refreshAuthToken = () => {
+const refreshAuthToken = async () => {
+  const query = `
+    mutation RefreshJWTAuthToken( $input: RefreshJwtAuthTokenInput! ) {
+      refreshJwtAuthToken( input:$input ) {
+        authToken
+      }
+    }
+  `;
+
   const options = {
     method: 'POST',
     mode: 'cors',
@@ -31,7 +39,7 @@ const refreshAuthToken = () => {
         'Content-Type': 'application/json'
       },
     body: JSON.stringify({
-      query: "mutation RefreshJWTAuthToken( $input: RefreshJwtAuthTokenInput! ){ refreshJwtAuthToken( input:$input ) { authToken } }",
+      query,
       variables: {
         input: {
           jwtRefreshToken: getToken('refreshToken'),
@@ -41,18 +49,18 @@ const refreshAuthToken = () => {
     })
   };
 
-  return new Promise( async (resolve, reject) => {
-    const [ response, error ] = await catchErrors( (await fetch('https://besttechcourses.test/graphql', options)).json() );
+  try {
+    const response = await (await fetch('https://besttechcourses.test/graphql', options)).json();
 
-    if ( error ) {
-      return reject( error );
-    }
+    if (response.errors && response.errors.length) return null;
 
     const token = response.data.refreshJwtAuthToken.authToken;
 
     setAuthToken(token);
-    resolve(token);
-  });
+    return token;
+  } catch (error) {
+    return null;
+  }
 };
 
 const httpLink = createHttpLink({
@@ -67,6 +75,11 @@ export const apolloClient = new ApolloClient({
 
 // TODO:
 // Redirect user to Sign In page if token refresh was unsucessful.
+// Although, this is only necessary for protected content - we don't
+// want to redirect to the Sign In page if someone is only trying to
+// access public content. Maybe handle this in the individual pages/components
+// instead.
+//
 // import { Redirect } from 'react-router-dom';
 // if (error) {
 //   return <Redirect to='/sign-in' push />;
