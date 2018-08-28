@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
-import CourseCategoryCard from '../components/CourseCategoryCard';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+import CourseCategoryCard from './CourseCategoryCard';
 
 class CourseCategoriesList extends Component {
   state = {
-    search: ''
+    search: '',
   };
 
   handleSearch = event => {
     this.setState({ search: event.target.value });
-  }
+  };
 
   getVisibleCategories = () => {
     const { courseCategories } = this.props;
@@ -18,11 +18,14 @@ class CourseCategoriesList extends Component {
     if (!courseCategories || !courseCategories.length) return [];
     const categories = courseCategories.map(index => index.courseCategory);
     if (!search) return categories;
-    return categories.filter(category => category.name.toLowerCase().includes(search.toLowerCase()));
-  }
+    return categories.filter(category =>
+      category.name.toLowerCase().includes(search.toLowerCase())
+    );
+  };
 
   render() {
     const categoriesVisible = this.getVisibleCategories();
+    const { search } = this.props;
 
     return (
       <section className="course-cat-list-container">
@@ -31,17 +34,17 @@ class CourseCategoriesList extends Component {
           placeholder="Language / framework"
           name="search"
           onChange={this.handleSearch}
-          value={this.state.search}
+          value={search}
         />
-        { categoriesVisible && categoriesVisible.length ?
+        {categoriesVisible && categoriesVisible.length ? (
           <ul className="course-cat-list">
-            {categoriesVisible.map( courseCategory => (
-              <CourseCategoryCard key={ courseCategory.id } courseCategory={ courseCategory } />
-            ) )}
+            {categoriesVisible.map(courseCategory => (
+              <CourseCategoryCard key={courseCategory.id} courseCategory={courseCategory} />
+            ))}
           </ul>
-        :
+        ) : (
           <p>No course categories found :(</p>
-        }
+        )}
       </section>
     );
   }

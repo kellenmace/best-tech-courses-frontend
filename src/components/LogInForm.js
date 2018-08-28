@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import { graphql } from 'react-apollo';
+import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
 import { storeUserData, getUuid } from '../controllers/auth';
 
@@ -9,109 +9,119 @@ class LogInForm extends Component {
     email: '',
     password: '',
     errors: {},
-    serverError: ''
-    // TODO– loading: false,
-  }
+    serverError: '',
+    // TODO – loading: false,
+  };
 
   handleInputChange = event => {
     this.setState({ [event.target.name]: event.target.value });
-  }
+  };
 
   handleFormSubmit = async event => {
+    const { logIn, updateloggedInStatus } = this.props;
+    const { email, password } = this.state;
+
     event.preventDefault();
     this.setState({ serverError: '' });
+
     const isValid = this.validate();
 
-    if ( ! isValid ) {
+    if (!isValid) {
       return;
     }
 
     try {
-      console.log( 'Logging in now.');
-
-      const response = await this.props.logInMutation({
+      const response = await logIn({
         variables: {
-          username: this.state.email,
-          password: this.state.password,
-          clientMutationId: getUuid()
-        }
+          username: email,
+          password,
+          clientMutationId: getUuid(),
+        },
       });
 
       storeUserData(response.data.login);
 
-      console.log('User authenticated successfully and token stored in localStorage.');
-
-      // TODO: display a "You are logged in" message.
-      // Using apollo-link-state, store a 'loggedIn' key that gets set to true/false
-      // When the user logs in/out. Set the nav menu up to reference that so that
-      // it rerenders whenever it changes.
-      // To get user data:
-      // JSON.parse( localStorage.getItem('userData') );
-
-    } catch(error) {
+      updateloggedInStatus({
+        variables: {
+          loggedIn: true,
+        },
+      });
+    } catch (error) {
       this.setState({ serverError: 'Invaid email or password. Please try again.' });
     }
-  }
+  };
 
   validate = () => {
-    const inputs = [...this.formEl.getElementsByTagName('input')];
-    const invalidInputs = inputs.filter(input => ! input.validity.valid);
-    const errors = {};
+    const invalidInputs = [...this.formEl.getElementsByTagName('input')].filter(
+      input => !input.validity.valid
+    );
 
-    // Add HTML5 form validation messages to errors object.
-    invalidInputs.map( input => errors[input.name] = input.validationMessage );
+    // Add HTML5 form validation messages to an errors object.
+    const errors = invalidInputs.reduce(
+      (errorsObj, input) => ({ ...errorsObj, [input.name]: input.validationMessage }),
+      {}
+    );
 
     this.setState({ errors });
 
     return isEmpty(errors);
-  }
+  };
 
   renderFieldError = name => {
     const { errors } = this.state;
-    if ( ! errors[ name ] ) return '';
+    if (!errors[name]) return null;
 
-    return <span className="LogInForm__error">{errors[ name ]}</span>;
-  }
+    return <span className="LogInForm__error">{errors[name]}</span>;
+  };
 
   renderServerError = () => {
     const { serverError } = this.state;
-    if ( ! serverError ) return '';
+    if (!serverError) return null;
 
     return <span className="LogInForm__error">{serverError}</span>;
-  }
+  };
 
   render() {
-    return (
-      <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
+    const { email, password } = this.state;
 
-          <label htmlFor="LogUpForm-email">Email</label>
+    return (
+      <form
+        ref={form => {
+          this.formEl = form;
+        }}
+        onSubmit={this.handleFormSubmit}
+        noValidate
+      >
+        <label htmlFor="LogUpForm-email">
+          Email
           <input
             id="LogUpForm-email"
             type="email"
             name="email"
-            value={ this.state.email }
+            value={email}
             onChange={this.handleInputChange}
             required
           />
-          {this.renderFieldError('email')}
-  
-          <label htmlFor="LogInForm-password">Password</label>
+        </label>
+        {this.renderFieldError('email')}
+
+        <label htmlFor="LogInForm-password">
+          Password
           <input
             id="LogInForm-password"
             type="password"
             name="password"
-            value={ this.state.password }
+            value={password}
             onChange={this.handleInputChange}
             required
           />
-          {this.renderFieldError('password')}
+        </label>
+        {this.renderFieldError('password')}
 
-          <p>Server Errors:</p>
-          {this.renderServerError()}
-  
-          <button>Log in</button>
-  
-        </form>
+        {this.renderServerError()}
+
+        <button type="submit">Log in</button>
+      </form>
     );
   }
 }
@@ -130,11 +140,9 @@ class LogInForm extends Component {
 
 const LOG_IN = gql`
   mutation LoginUser($username: String!, $password: String!, $clientMutationId: String!) {
-    login( input: {
-      username: $username,
-      password: $password,
-      clientMutationId: $clientMutationId
-    } ) {
+    login(
+      input: { username: $username, password: $password, clientMutationId: $clientMutationId }
+    ) {
       authToken
       refreshToken
       user {
@@ -145,4 +153,15 @@ const LOG_IN = gql`
   }
 `;
 
-export default graphql(LOG_IN, { name: 'logInMutation' })(LogInForm);
+const UPDATE_LOGGED_IN_STATUS = gql`
+  mutation updateloggedInStatus($loggedIn: Bool!) {
+    updateloggedInStatus(loggedIn: $loggedIn) @client {
+      loggedIn
+    }
+  }
+`;
+
+export default compose(
+  graphql(LOG_IN, { name: 'logIn' }),
+  graphql(UPDATE_LOGGED_IN_STATUS, { name: 'updateloggedInStatus' })
+)(LogInForm);

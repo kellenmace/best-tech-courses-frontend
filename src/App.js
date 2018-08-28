@@ -1,6 +1,6 @@
 import React from 'react';
-import Routes from './routes';
 import { ApolloProvider } from 'react-apollo';
+import Routes from './routes';
 import { apolloClient } from './controllers/apollo';
 // import './App.css';
 

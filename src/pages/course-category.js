@@ -1,22 +1,25 @@
 import React from 'react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import Layout from '../components/Layout';
-import { graphql } from 'react-apollo'
-import gql from 'graphql-tag'
 import CoursesList from '../components/CoursesList';
 
 const CourseCategory = props => {
-  if (! props.courseCategories || ! props.courseCategories.edges.length) {
+  const { courseCategories } = props;
+
+  if (!courseCategories || !courseCategories.edges.length) {
     return <NotFound />;
   }
-  const courseCategory = props.courseCategories.edges[0].courseCategory;
+
+  const courseCategory = courseCategories.edges[0].courseCategory;
   const { name, imageUrl, coursesList } = courseCategory;
-  const courses = coursesList.courses.map( index => index.course );
+  const courses = coursesList.courses.map(index => index.course);
 
   return (
     <Layout>
       <img src={imageUrl} alt={name} />
-      <h1>{ name }</h1>
-      <CoursesList courses={ courses } />
+      <h1>{name}</h1>
+      <CoursesList courses={courses} />
     </Layout>
   );
 };
@@ -29,9 +32,7 @@ const NotFound = () => (
 
 const GET_COURSE_CATEGORY = gql`
   query getCourseCategory($slug: [String]) {
-    courseCategories( where: {
-      slug: $slug
-    } ) {
+    courseCategories(where: { slug: $slug }) {
       edges {
         courseCategory: node {
           id
@@ -64,5 +65,5 @@ const GET_COURSE_CATEGORY = gql`
 
 export default graphql(GET_COURSE_CATEGORY, {
   options: props => ({ variables: { slug: props.match.params.slug } }),
-  props: ({ data: courseCategories }) => (courseCategories)
+  props: ({ data: courseCategories }) => courseCategories,
 })(CourseCategory);

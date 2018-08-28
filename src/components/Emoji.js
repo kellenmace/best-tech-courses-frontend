@@ -1,12 +1,16 @@
 import React from 'react';
 
-export default props => (
-  <span
-    className="emoji"
-    role="img"
-    aria-label={props.label ? props.label : ""}
-    aria-hidden={props.label ? "false" : "true"}
-  >
-    {props.symbol}
-  </span>
-);
+export default props => {
+  const { symbol, label } = props;
+
+  return (
+    <span
+      className="emoji"
+      role="img"
+      aria-label={label || ''}
+      aria-hidden={label ? 'false' : 'true'}
+    >
+      {symbol}
+    </span>
+  );
+};

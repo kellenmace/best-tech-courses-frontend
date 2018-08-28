@@ -3,8 +3,8 @@ import isEmpty from 'lodash/isEmpty';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { getUuid } from '../controllers/auth';
-import GoToInboxButton from '../components/GoToInboxButton';
-import Emoji from '../components/Emoji';
+import GoToInboxButton from './GoToInboxButton';
+import Emoji from './Emoji';
 
 class SignUpForm extends Component {
   state = {
@@ -14,13 +14,13 @@ class SignUpForm extends Component {
     payPalEmail: '',
     errors: {},
     serverError: '',
-    registered: false
+    registered: false,
     // TODO – loading: false,
-  }
+  };
 
   handleInputChange = event => {
     this.setState({ [event.target.name]: event.target.value });
-  }
+  };
 
   handleFormSubmit = async event => {
     const { firstName, lastName, email, payPalEmail } = this.state;
@@ -31,7 +31,7 @@ class SignUpForm extends Component {
 
     const isValid = this.validate();
 
-    if ( ! isValid ) {
+    if (!isValid) {
       return;
     }
 
@@ -42,109 +42,130 @@ class SignUpForm extends Component {
           firstName,
           lastName,
           email,
-          payPalEmail
-        }
+          payPalEmail,
+        },
       });
 
       if (response.data.registerUser) {
         this.setState({ registered: true });
       }
-    }
-    catch(error) {
+    } catch (error) {
       this.setState({ serverError: 'Invaid email or password. Please try again.' });
     }
-  }
+  };
 
   validate = () => {
-    const inputs = [...this.formEl.getElementsByTagName('input')];
-    const invalidInputs = inputs.filter(input => ! input.validity.valid);
-    const errors = {};
+    const invalidInputs = [...this.formEl.getElementsByTagName('input')].filter(
+      input => !input.validity.valid
+    );
 
-    // Add HTML5 form validation messages to errors object.
-    invalidInputs.map( input => errors[input.name] = input.validationMessage );
+    // Add HTML5 form validation messages to an errors object.
+    const errors = invalidInputs.reduce(
+      (errorsObj, input) => ({ ...errorsObj, [input.name]: input.validationMessage }),
+      {}
+    );
 
     this.setState({ errors });
 
     return isEmpty(errors);
-  }
+  };
 
   renderFieldError = name => {
     const { errors } = this.state;
-    if ( ! errors[ name ] ) return '';
+    if (!errors[name]) return '';
 
-    return <span className="SignUpForm__error">{errors[ name ]}</span>;
-  }
+    return <span className="SignUpForm__error">{errors[name]}</span>;
+  };
 
   renderServerError = () => {
     const { serverError } = this.state;
-    if ( ! serverError ) return '';
+    if (!serverError) return '';
 
     return <span className="LogInForm__error">{serverError}</span>;
-  }
+  };
 
   render() {
-    const { registered, email } = this.state;
+    const { firstName, lastName, email, payPalEmail, registered } = this.state;
 
-    if ( registered ) {
+    if (registered) {
       return (
         <div>
           <h3>All right, Sparky!</h3>
-          <p>A confirmation link has been emailed to you. Please visit it to confirm your account.</p>
-          <GoToInboxButton email={ email } />
+          <p>
+            A confirmation link has been emailed to you. Please visit it to confirm your account.
+          </p>
+          <GoToInboxButton email={email} />
         </div>
       );
     }
 
     return (
-      <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
-        <label htmlFor="SignUpForm-first-name">First Name</label>
-        <input
-          id="SignUpForm-first-name"
-          type="text"
-          name="firstName"
-          value={ this.state.firstName }
-          onChange={this.handleInputChange}
-          required
-        />
+      <form
+        ref={form => {
+          this.formEl = form;
+        }}
+        onSubmit={this.handleFormSubmit}
+        noValidate
+      >
+        <label htmlFor="SignUpForm-first-name">
+          First Name
+          <input
+            id="SignUpForm-first-name"
+            type="text"
+            name="firstName"
+            value={firstName}
+            onChange={this.handleInputChange}
+            required
+          />
+        </label>
         {this.renderFieldError('firstName')}
 
-        <label htmlFor="SignUpForm-last-name">Last Name</label>
-        <input
-          id="SignUpForm-last-name"
-          type="text"
-          name="lastName"
-          value={ this.state.lastName }
-          onChange={this.handleInputChange}
-          required
-        />
+        <label htmlFor="SignUpForm-last-name">
+          Last Name
+          <input
+            id="SignUpForm-last-name"
+            type="text"
+            name="lastName"
+            value={lastName}
+            onChange={this.handleInputChange}
+            required
+          />
+        </label>
         {this.renderFieldError('lastName')}
 
-        <label htmlFor="SignUpForm-email">Email</label>
-        <input
-          id="SignUpForm-email"
-          type="email"
-          name="email"
-          value={ this.state.email }
-          onChange={this.handleInputChange}
-          required
-        />
+        <label htmlFor="SignUpForm-email">
+          Email
+          <input
+            id="SignUpForm-email"
+            type="email"
+            name="email"
+            value={email}
+            onChange={this.handleInputChange}
+            required
+          />
+        </label>
         {this.renderFieldError('email')}
 
-        <label htmlFor="SignUpForm-payPalEmail">PayPal Email</label>
-        <input
-          id="SignUpForm-payPalEmail"
-          type="email"
-          name="payPalEmail"
-          value={ this.state.payPalEmail }
-          onChange={this.handleInputChange}
-          required
-        />
-        <span>This is required so we can send you <Emoji symbol="💰" label="money bag" /> for the reviews you leave.</span>
+        <label htmlFor="SignUpForm-payPalEmail">
+          PayPal Email
+          <input
+            id="SignUpForm-payPalEmail"
+            type="email"
+            name="payPalEmail"
+            value={payPalEmail}
+            onChange={this.handleInputChange}
+            required
+          />
+        </label>
+        <span>
+          This is required so we can send you <Emoji symbol="💰" label="money bag" /> for the
+          reviews you leave.
+        </span>
         {this.renderFieldError('payPalEmail')}
 
         {this.renderServerError()}
 
-        <button>Sign up</button>
+        <button type="submit">Sign up</button>
 
         {/* <style jsx>{`
           // .was-validated .form-control:valid~.invalid-feedback {
@@ -158,7 +179,6 @@ class SignUpForm extends Component {
             border: 2px solid green;
           }
         `}</style> */}
-
       </form>
     );
   }
@@ -172,20 +192,22 @@ class SignUpForm extends Component {
 
 const REGISTER_USER = gql`
   mutation registerUser(
-    $clientMutationId: String!,
-    $firstName: String!,
-    $lastName: String!,
-    $email: String!,
-    $payPalEmail: String!,
+    $clientMutationId: String!
+    $firstName: String!
+    $lastName: String!
+    $email: String!
+    $payPalEmail: String!
   ) {
-    registerUser(input: {
-      clientMutationId: $clientMutationId
-      username: $email
-      firstName: $firstName
-      lastName: $lastName
-      email: $email
-      payPalEmail: $payPalEmail
-    }) {
+    registerUser(
+      input: {
+        clientMutationId: $clientMutationId
+        username: $email
+        firstName: $firstName
+        lastName: $lastName
+        email: $email
+        payPalEmail: $payPalEmail
+      }
+    ) {
       user {
         username
         email

@@ -3,22 +3,21 @@ import isEmpty from 'lodash/isEmpty';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { getUuid } from '../controllers/auth';
-import GoToInboxButton from '../components/GoToInboxButton';
-import Emoji from '../components/Emoji';
+import GoToInboxButton from './GoToInboxButton';
+import Emoji from './Emoji';
 
 class PasswordResetLinkForm extends Component {
   state = {
     email: '',
     errors: {},
     serverError: '',
-    emailSent: false
-    // isValidated: false,
+    emailSent: false,
     // loading: false,
-  }
+  };
 
   handleInputChange = event => {
     this.setState({ [event.target.name]: event.target.value });
-  }
+  };
 
   handleFormSubmit = async event => {
     const { email } = this.state;
@@ -29,7 +28,7 @@ class PasswordResetLinkForm extends Component {
 
     const isValid = this.validate();
 
-    if ( ! isValid ) {
+    if (!isValid) {
       return;
     }
 
@@ -38,44 +37,48 @@ class PasswordResetLinkForm extends Component {
         variables: {
           clientMutationId: getUuid(),
           username: email,
-        }
+        },
       });
 
       if (response.data.sendPasswordResetEmail) {
         this.setState({ emailSent: true });
       }
+    } catch (error) {
+      this.setState({
+        serverError: 'There is no user registered with that email address. Please try again.',
+      });
     }
-    catch(error) {
-      this.setState({ serverError: 'There is no user registered with that email address. Please try again.' });
-    }
-  }
+  };
 
   validate = () => {
-    const inputs = [...this.formEl.getElementsByTagName('input')];
-    const invalidInputs = inputs.filter(input => ! input.validity.valid);
-    const errors = {};
+    const invalidInputs = [...this.formEl.getElementsByTagName('input')].filter(
+      input => !input.validity.valid
+    );
 
-    // Add HTML5 form validation messages to errors object.
-    invalidInputs.map( input => errors[input.name] = input.validationMessage );
+    // Add HTML5 form validation messages to an errors object.
+    const errors = invalidInputs.reduce(
+      (errorsObj, input) => ({ ...errorsObj, [input.name]: input.validationMessage }),
+      {}
+    );
 
     this.setState({ errors });
 
     return isEmpty(errors);
-  }
+  };
 
   renderFieldError = name => {
     const { errors } = this.state;
-    if ( ! errors[ name ] ) return '';
+    if (!errors[name]) return null;
 
-    return <span className="PasswordResetLinkForm__error">{errors[ name ]}</span>;
-  }
+    return <span className="PasswordResetLinkForm__error">{errors[name]}</span>;
+  };
 
   renderServerError = () => {
     const { serverError } = this.state;
-    if ( ! serverError ) return '';
+    if (!serverError) return null;
 
     return <span className="PasswordResetLinkForm__error">{serverError}</span>;
-  }
+  };
 
   render() {
     const { email, emailSent } = this.state;
@@ -84,47 +87,48 @@ class PasswordResetLinkForm extends Component {
       return (
         <div>
           <p>
-            <Emoji symbol="🔗" label="link" /> A password reset link has been emailed to you. <Emoji symbol="🔗" label="link" />
+            <Emoji symbol="🔗" label="link" /> A password reset link has been emailed to you.{' '}
+            <Emoji symbol="🔗" label="link" />
           </p>
-          <GoToInboxButton email={ email } />
+          <GoToInboxButton email={email} />
         </div>
       );
     }
 
     return (
-        <form ref={form => this.formEl = form} onSubmit={this.handleFormSubmit} noValidate>
+      <form
+        ref={form => {
+          this.formEl = form;
+        }}
+        onSubmit={this.handleFormSubmit}
+        noValidate
+      >
+        <p>Please enter your email address to recieve a password reset link.</p>
 
-          <p>Please enter your email address to recieve a password reset link.</p>
-
-          <label htmlFor="PasswordResetLinkForm-email">Email</label>
+        <label htmlFor="PasswordResetLinkForm-email">
+          Email
           <input
             id="PasswordResetLinkForm-email"
             type="email"
             name="email"
-            value={this.state.email}
+            value={email}
             onChange={this.handleInputChange}
             required
           />
-          {this.renderFieldError('email')}
+        </label>
+        {this.renderFieldError('email')}
 
-          {this.renderServerError()}
+        {this.renderServerError()}
 
-          <button>Get password reset link</button>
-
-        </form>
+        <button type="submit">Get password reset link</button>
+      </form>
     );
   }
 }
 
 const SENT_PASSWORD_RESET_EMAIL = gql`
-  mutation sendPasswordResetEmail(
-    $clientMutationId: String!,
-    $username: String!,
-  ) {
-    sendPasswordResetEmail(input: {
-      clientMutationId: $clientMutationId
-      username: $username
-    }) {
+  mutation sendPasswordResetEmail($clientMutationId: String!, $username: String!) {
+    sendPasswordResetEmail(input: { clientMutationId: $clientMutationId, username: $username }) {
       user {
         username
         email
@@ -133,4 +137,6 @@ const SENT_PASSWORD_RESET_EMAIL = gql`
   }
 `;
 
-export default graphql(SENT_PASSWORD_RESET_EMAIL, { name: 'sendPasswordResetEmail' })(PasswordResetLinkForm);
+export default graphql(SENT_PASSWORD_RESET_EMAIL, { name: 'sendPasswordResetEmail' })(
+  PasswordResetLinkForm
+);

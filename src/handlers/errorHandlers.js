@@ -8,10 +8,6 @@
  * } else {
  *  // Cool! looks like we can safely work with someData.
  * }
- * 
+ *
  */
-export const catchErrors = promise => (
-  promise
-    .then( data => [ data ] )
-    .catch( error => [ null, error ] )
-);
+export const catchErrors = promise => promise.then(data => [data]).catch(error => [null, error]);
