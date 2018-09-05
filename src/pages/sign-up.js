@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';

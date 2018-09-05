@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import LoadingSpinner from './LoadingSpinner';
+import Error from './Error';
 import CourseCategoryCard from './CourseCategoryCard';
 
 class CourseCategoriesList extends Component {
@@ -13,19 +15,30 @@ class CourseCategoriesList extends Component {
   };
 
   getVisibleCategories = () => {
-    const { courseCategories } = this.props;
+    const {
+      courseCategoriesList: { courseCategories },
+    } = this.props;
     const { search } = this.state;
+
     if (!courseCategories || !courseCategories.length) return [];
+
     const categories = courseCategories.map(index => index.courseCategory);
+
     if (!search) return categories;
+
     return categories.filter(category =>
       category.name.toLowerCase().includes(search.toLowerCase())
     );
   };
 
   render() {
+    const { loading, error } = this.props;
+    const { search } = this.state;
+
+    if (loading) return <LoadingSpinner />;
+    if (error) return <Error message="Sorry– unable to load course categories." />;
+
     const categoriesVisible = this.getVisibleCategories();
-    const { search } = this.props;
 
     return (
       <section className="course-cat-list-container">
@@ -66,5 +79,9 @@ const GET_COURSE_CATEGORIES = gql`
 `;
 
 export default graphql(GET_COURSE_CATEGORIES, {
-  props: ({ data: { courseCategoriesList } }) => courseCategoriesList,
+  props: ({ data: { courseCategoriesList, loading, error } }) => ({
+    courseCategoriesList,
+    loading,
+    error,
+  }),
 })(CourseCategoriesList);

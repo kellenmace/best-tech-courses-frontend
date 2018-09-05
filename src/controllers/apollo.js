@@ -55,6 +55,8 @@ const stateLink = withClientState({
         if (!loggedIn) {
           deleteJWT();
         }
+
+        return null;
       },
     },
   },

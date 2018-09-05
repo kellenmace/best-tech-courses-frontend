@@ -19,7 +19,8 @@ class SignUpForm extends Component {
   };
 
   handleInputChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
   };
 
   handleFormSubmit = async event => {

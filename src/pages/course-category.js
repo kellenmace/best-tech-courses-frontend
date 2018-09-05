@@ -2,14 +2,36 @@ import React from 'react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Layout from '../components/Layout';
+import LoadingSpinner from '../components/LoadingSpinner';
+import Error from '../components/Error';
 import CoursesList from '../components/CoursesList';
+import Emoji from '../components/Emoji';
 
 const CourseCategory = props => {
-  const { courseCategories } = props;
+  const { courseCategories, loading, error } = props;
 
-  if (!courseCategories || !courseCategories.edges.length) {
-    return <NotFound />;
-  }
+  if (loading)
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
+
+  if (error)
+    return (
+      <Layout>
+        <Error message="Sorry– unable to load courses." />
+      </Layout>
+    );
+
+  if (!courseCategories || !courseCategories.edges.length)
+    return (
+      <Layout>
+        <p>
+          Course category not found <Emoji symbol="☹️" label="frowning face" />
+        </p>
+      </Layout>
+    );
 
   const courseCategory = courseCategories.edges[0].courseCategory;
   const { name, imageUrl, coursesList } = courseCategory;
@@ -23,12 +45,6 @@ const CourseCategory = props => {
     </Layout>
   );
 };
-
-const NotFound = () => (
-  <Layout>
-    <p>Course category not found :(</p>
-  </Layout>
-);
 
 const GET_COURSE_CATEGORY = gql`
   query getCourseCategory($slug: [String]) {
