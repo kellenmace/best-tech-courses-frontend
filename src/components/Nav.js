@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import { getGravatar } from '../controllers/auth';
+import { getGravatar } from '../controllers/userData';
 
 const Nav = props => {
   const { loggedIn } = props;

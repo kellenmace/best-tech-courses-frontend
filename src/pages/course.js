@@ -1,40 +1,73 @@
 import React from 'react';
-import { graphql } from 'react-apollo';
+import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
-import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import LoadingSpinner from '../components/LoadingSpinner';
+import Error from '../components/Error';
+import Emoji from '../components/Emoji';
 
-const Course = ({ course }) => {
-  if (!course) return <NotFound />;
-  const { title, content, affiliateLink } = course;
+const Course = props => {
+  const { course, loading, error } = props;
 
-  // TODO:
-  // Handle link click. If user is not logged in, send them to the sign up/login page.
-  // If user is logged in, display countdown timer and save affiliate link click CPT
-  // Maybe do this in a modal instead, and have users click a second time.
+  if (loading)
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
+
+  if (error)
+    return (
+      <Layout>
+        <Error message="Sorry– unable to load course." />
+      </Layout>
+    );
+
+  const { courseId, title, content, affiliateLink } = course;
+
+  const handleClick = async event => {
+    const { addTimer } = props;
+    event.preventDefault();
+
+    // TODO: If user is not logged in, send them to the sign up/login page.
+
+    try {
+      const startTimestamp = Date.now();
+      const response = await addTimer({
+        variables: { courseId, startTimestamp },
+      });
+      // TODO: display timer.
+    } catch (error) {
+      // TODO: handle error.
+    }
+  };
 
   return (
     <Layout>
       <article className="course">
         <h1>{title}</h1>
         <div className="content" dangerouslySetInnerHTML={{ __html: content }} />
-        <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
+        <a onClick={handleClick} href={affiliateLink} target="_blank" rel="noopener noreferrer">
           Take course →
         </a>
+        <div style={{ border: '5px solid #ccc' }}>
+          <h3>Time left to register</h3>
+          <LoadingSpinner />
+        </div>
+        <span>
+          <Emoji symbol="⏱" label="stopwatch" />
+          You have 30 minutes to register for this course after clicking through to it. If you need
+          more time, just come back here and press the button again.
+        </span>
       </article>
     </Layout>
   );
 };
 
-const NotFound = () => (
-  <Layout>
-    <p>Course not found :(</p>
-  </Layout>
-);
-
 const GET_COURSE = gql`
   query getCourse($slug: String) {
     course: courseBy(slug: $slug) {
+      courseId
       title
       content
       instructor
@@ -47,7 +80,22 @@ const GET_COURSE = gql`
   }
 `;
 
-export default graphql(GET_COURSE, {
-  options: props => ({ variables: { slug: props.match.params.slug } }),
-  props: ({ data: { course } }) => ({ course }),
-})(Course);
+const ADD_TIMER = gql`
+  mutation addTimer($courseId: String!, $startTimestamp: String!) {
+    addTimer(courseId: $courseId, startTimestamp: $startTimestamp) @client {
+      timers
+    }
+  }
+`;
+
+export default compose(
+  graphql(GET_COURSE, {
+    options: props => ({ variables: { slug: props.match.params.slug } }),
+    props: ({ data: { course, loading, error } }) => ({
+      course,
+      loading,
+      error,
+    }),
+  }),
+  graphql(ADD_TIMER, { name: 'addTimer' })
+)(Course);

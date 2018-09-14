@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
-import { storeUserData, getUuid } from '../controllers/auth';
+import { storeUserData } from '../controllers/userData';
+import { getUuid } from '../controllers/auth';
 
 class LogInForm extends Component {
   state = {

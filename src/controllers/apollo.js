@@ -5,14 +5,13 @@ import { concat, ApolloLink } from 'apollo-link';
 import { setContext } from 'apollo-link-context';
 import { withClientState } from 'apollo-link-state';
 import gql from 'graphql-tag';
+import { deleteUserData } from './userData';
+import { isAuthTokenValid, getToken, isTokenExpired, setAuthToken, getUuid } from './auth';
 import {
-  isAuthTokenValid,
-  getToken,
-  isTokenExpired,
-  setAuthToken,
-  getUuid,
-  deleteJWT,
-} from './auth';
+  getActiveTimersFromLocalStorage,
+  getOtherActiveTimers,
+  saveTimersToLocalStorage,
+} from './timers';
 // import { catchErrors } from '../handlers/errorHandlers';
 
 const cache = new InMemoryCache();
@@ -22,6 +21,7 @@ const defaultState = {
     __typename: 'user',
     loggedIn: isAuthTokenValid(),
   },
+  timers: getActiveTimersFromLocalStorage(),
 };
 
 // Local state link.
@@ -53,8 +53,38 @@ const stateLink = withClientState({
         cache.writeData({ query, data });
 
         if (!loggedIn) {
-          deleteJWT();
+          deleteUserData();
         }
+
+        return null;
+      },
+      // Pass in an object with a courseId and a startTimestamp.
+      addTimer: (_, timer, { cache }) => {
+        const query = gql`
+          query {
+            timers @client {
+              __typename
+              courseId
+              startTimestamp
+            }
+          }
+        `;
+
+        const previousState = cache.readQuery({ query });
+
+        const data = {
+          ...previousState,
+          timers: [
+            ...getOtherActiveTimers(previousState.timers, timer.courseId),
+            {
+              __typename: 'timer',
+              ...timer,
+            },
+          ],
+        };
+
+        cache.writeData({ query, data });
+        saveTimersToLocalStorage(data.timers);
 
         return null;
       },
