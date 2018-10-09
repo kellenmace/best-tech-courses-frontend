@@ -1,8 +1,9 @@
-// COUNTDOWN TIMER EXAMPLES:
-// https://www.npmjs.com/package/react-countdown-now
-// https://stackoverflow.com/questions/40885923/countdown-timer-in-react
-// https://codesandbox.io/s/zmP5vGEOm
-// https://medium.com/@sairamkrish/reactjs-countdown-timer-with-support-for-callbacks-browsercrash-and-optimal-rendering-performance-ba38b045c65d
+// TODO:
+// Consider storing Date objects instead of timestamps
+// 
+// const myTimer = new Date();
+// localStorage.setItem('timer', myTimer );
+// const timerFromLocalStorage = new Date( Date.parse(localStorage.getItem('timer')) );
 
 const TIMERS_KEY = 'timers';
 const TIMER_DURATION = 30 * 60000; // 30 mins in milliseconds.

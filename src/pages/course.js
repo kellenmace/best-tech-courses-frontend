@@ -26,10 +26,12 @@ const Course = props => {
   const { courseId, title, content, affiliateLink } = course;
 
   const handleClick = async event => {
-    const { addTimer } = props;
-    event.preventDefault();
+    const { loggedIn, addTimer } = props;
 
-    // TODO: If user is not logged in, send them to the sign up/login page.
+    if (!loggedIn) {
+      event.preventDefault();
+      props.history.push('/sign-up');
+    }
 
     try {
       const startTimestamp = Date.now();
@@ -39,6 +41,7 @@ const Course = props => {
       // TODO: display timer.
     } catch (error) {
       // TODO: handle error.
+      event.preventDefault();
     }
   };
 
@@ -80,6 +83,14 @@ const GET_COURSE = gql`
   }
 `;
 
+const USER_LOGGED_IN = gql`
+  query {
+    user @client {
+      loggedIn
+    }
+  }
+`;
+
 const ADD_TIMER = gql`
   mutation addTimer($courseId: String!, $startTimestamp: String!) {
     addTimer(courseId: $courseId, startTimestamp: $startTimestamp) @client {
@@ -96,6 +107,9 @@ export default compose(
       loading,
       error,
     }),
+  }),
+  graphql(USER_LOGGED_IN, {
+    props: ({ data: { user } }) => user,
   }),
   graphql(ADD_TIMER, { name: 'addTimer' })
 )(Course);

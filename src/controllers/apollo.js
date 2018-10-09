@@ -167,8 +167,3 @@ export const apolloClient = new ApolloClient({
 // want to redirect to the Sign In page if someone is only trying to
 // access public content. Maybe handle this in the individual pages/components
 // instead.
-//
-// import { Redirect } from 'react-router-dom';
-// if (error) {
-//   return <Redirect to='/sign-in' push />;
-// }
